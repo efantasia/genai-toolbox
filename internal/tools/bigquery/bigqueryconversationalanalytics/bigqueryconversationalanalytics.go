@@ -100,11 +100,16 @@ type InlineContext struct {
 	Options              Options              `json:"options"`
 }
 
+type DataAgentContext struct {
+	DataAgent string `json:"dataAgent"`
+}
+
 type CAPayload struct {
-	Project       string        `json:"project"`
-	Messages      []Message     `json:"messages"`
-	InlineContext InlineContext `json:"inlineContext"`
-	ClientIdEnum  string        `json:"clientIdEnum"`
+	Project          string            `json:"project"`
+	Messages         []Message         `json:"messages"`
+	InlineContext    *InlineContext     `json:"inlineContext,omitempty"`
+	DataAgentContext *DataAgentContext  `json:"dataAgentContext,omitempty"`
+	ClientIdEnum     string            `json:"clientIdEnum"`
 }
 
 type Config struct {
@@ -113,6 +118,7 @@ type Config struct {
 	Source       string   `yaml:"source" validate:"required"`
 	Description  string   `yaml:"description" validate:"required"`
 	AuthRequired []string `yaml:"authRequired"`
+	DataAgent    string   `yaml:"dataAgent,omitempty"`
 }
 
 // validate interface
@@ -247,15 +253,22 @@ func (t Tool) Invoke(ctx context.Context, resourceMgr tools.SourceProvider, para
 	}
 
 	payload := CAPayload{
-		Project:  fmt.Sprintf("projects/%s", projectID),
-		Messages: []Message{{UserMessage: UserMessage{Text: finalQueryText}}},
-		InlineContext: InlineContext{
+		Project:      fmt.Sprintf("projects/%s", projectID),
+		Messages:     []Message{{UserMessage: UserMessage{Text: finalQueryText}}},
+		ClientIdEnum: util.GDAClientID,
+	}
+
+	if t.DataAgent != "" {
+		payload.DataAgentContext = &DataAgentContext{
+			DataAgent: t.DataAgent,
+		}
+	} else {
+		payload.InlineContext = &InlineContext{
 			DatasourceReferences: DatasourceReferences{
 				BQ: BQDatasource{TableReferences: tableRefs},
 			},
 			Options: Options{Chart: ChartOptions{Image: ImageOptions{NoImage: map[string]any{}}}},
-		},
-		ClientIdEnum: util.GDAClientID,
+		}
 	}
 
 	// Call the streaming API
