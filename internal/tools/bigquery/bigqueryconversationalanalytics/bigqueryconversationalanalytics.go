@@ -108,8 +108,8 @@ type DataAgentContext struct {
 type CAPayload struct {
 	Project          string            `json:"project"`
 	Messages         []Message         `json:"messages"`
-	InlineContext    *InlineContext     `json:"inlineContext,omitempty"`
-	DataAgentContext *DataAgentContext  `json:"dataAgentContext,omitempty"`
+	InlineContext    *InlineContext    `json:"inlineContext,omitempty"`
+	DataAgentContext *DataAgentContext `json:"dataAgentContext,omitempty"`
 	ClientIdEnum     string            `json:"clientIdEnum"`
 }
 
